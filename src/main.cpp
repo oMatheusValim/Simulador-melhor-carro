@@ -1,71 +1,113 @@
 #include <SFML/Graphics.hpp>
-#include "imgui.h"
-#include "imgui-SFML.h"
-
 #include "Config.h"
 #include "AlgoritmoEvolutivo.h"
 #include "Simulacao.h"
+#include "UIManager.h" 
+#include <iostream>
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(LARGURA_JANELA, ALTURA_JANELA), TITULO_JANELA);
     window.setFramerateLimit(60);
-    ImGui::SFML::Init(window);
 
     AlgoritmoEvolutivo ag;
     ag.Iniciar();
 
     Simulacao sim(&ag.populacao);
+    
+    UIManager ui(300.0f);
+    ui.Inicializar();
 
+    // --- VARIÁVEIS DE CONTROLE ---
+    bool sim_deve_alternar_pausa = false; // Gatilho do botão Iniciar/Pausar
+    bool sim_deve_reiniciar = false;    // Gatilho do botão Reiniciar
+    bool simulacao_automatica = false; // Estado atual (rodando ou pausado)
+    bool editor_mode = false; // Para o editor de waypoints
     sf::Clock deltaClock;
+
     while (window.isOpen()) {
+        float dt = deltaClock.restart().asSeconds();
         sf::Event event;
+
         while (window.pollEvent(event)) {
-            ImGui::SFML::ProcessEvent(window, event);
+            // Passa ambos os gatilhos para a UI (por referência)
+            ui.TratarEvento(event, sim_deve_alternar_pausa, sim_deve_reiniciar); 
+
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-        }
 
-        float dt = deltaClock.restart().asSeconds();
-        ImGui::SFML::Update(window, sf::seconds(dt));
-
-        // --- Interface ImGui ---
-        ImGui::Begin("Painel de Controle");
-        if (ImGui::Button("Iniciar Corrida / Próxima Geração")) {
-            if (sim.corrida_terminou) {
-                ag.ProximaGeracao();
+            // --- LÓGICA DO MODO EDITOR ---
+            if (event.type == sf::Event::KeyReleased) {
+                if (event.key.code == sf::Keyboard::E) {
+                    editor_mode = !editor_mode;
+                    std::cout << "--- MODO EDITOR: " << (editor_mode ? "ATIVADO" : "DESATIVADO") << " ---" << std::endl;
+                }
             }
-            sim.IniciarCorrida();
+            if (editor_mode && event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    std::cout << "m_waypoints.push_back(sf::Vector2f(" 
+                              << event.mouseButton.x << ".f, " 
+                              << event.mouseButton.y << ".f));" << std::endl;
+                }
+            }
+            // --- FIM DA LÓGICA DO EDITOR ---
         }
-        ImGui::Text("Geração: %d", ag.geracao_atual);
-        ImGui::Text("Melhor Fitness Global: %.2f", ag.melhor_de_todos.fitness);
+
+        // --- LÓGICA DE CONTROLE (CORRIGIDA) ---
         
-        ImGui::Separator();
-        ImGui::Text("Genoma do Melhor:");
-        Genoma& melhor_g = ag.melhor_de_todos.genoma;
-        ImGui::Text("  Potencia: %.2f", melhor_g.potencia_motor);
-        ImGui::Text("  Peso Piloto: %.2f", melhor_g.peso_piloto);
-        ImGui::Text("  Tanque: %.2f L", melhor_g.tamanho_tanque);
-
-        // Gráfico simples de fitness
-        if (!ag.historico_fitness.empty()) {
-             ImGui::PlotLines("Melhor Fitness por Geração", ag.historico_fitness.data(), ag.historico_fitness.size());
+        // 1. Checa por REINÍCIO (prioridade máxima)
+        if (sim_deve_reiniciar) {
+            ag.Reiniciar();              // Reseta o algoritmo
+            sim.PararCorrida();          // Para a corrida atual
+            simulacao_automatica = false; // Desliga o modo automático
+            sim_deve_reiniciar = false;   // Reseta o gatilho
         }
 
-        ImGui::End();
+        // 2. Checa por INICIAR/PAUSAR
+        if (sim_deve_alternar_pausa) {
+            simulacao_automatica = !simulacao_automatica; // Inverte o estado
+            
+            // Se ESTAMOS LIGANDO a simulação (e ela não estava rodando)
+            if (simulacao_automatica && sim.corrida_terminou) {
+                sim.IniciarCorrida();
+            }
+            sim_deve_alternar_pausa = false; // Reseta o gatilho
+        }
+        
+        // 3. Roda a simulação automática (se estiver ligada)
+        if (simulacao_automatica) {
+            if (sim.rodando) {
+                sim.Atualizar(dt);
+            }
+            if (sim.corrida_terminou) {
+                ag.ProximaGeracao();   
+                sim.IniciarCorrida();    
+            }
+        }
+        // --- Fim da Lógica de Controle ---
 
-        // --- Lógica da Simulação ---
-        sim.Atualizar(dt);
+        // Atualiza a UI (passa o estado da simulação)
+        ui.Atualizar(ag.historico_fitness, 
+                     ag.historico_tempo_melhor, 
+                     ag.melhor_de_todos, 
+                     ag.populacao,
+                     simulacao_automatica); // Passa o estado atual
 
         // --- Desenho ---
-        window.clear(sf::Color(50, 50, 50)); // Fundo cinza escuro
-        for (auto& carro : ag.populacao) {
-            carro.Desenhar(window);
+        window.clear(sf::Color(50, 50, 50));
+        sim.m_pista.Desenhar(window); 
+        
+        // --- CORREÇÃO DE EXIBIÇÃO ---
+        // Desenha os carros se a simulação estiver rodando OU pausada
+        // (Só não desenha se a simulação não foi iniciada)
+        if (simulacao_automatica || sim.rodando) {
+            for (auto& carro : ag.populacao) {
+                carro.Desenhar(window);
+            }
         }
-        ImGui::SFML::Render(window);
+        
+        ui.Desenhar(window);
         window.display();
     }
-
-    ImGui::SFML::Shutdown();
     return 0;
 }

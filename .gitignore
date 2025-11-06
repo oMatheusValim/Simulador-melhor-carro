@@ -15,3 +15,5 @@ Makefile
 *.so
 *.a
 *.lib
+
+infos-rodar.txt
