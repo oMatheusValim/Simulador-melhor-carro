@@ -109,6 +109,10 @@ void UIManager::Inicializar() {
 
     // --- Gráfico de Tempo ---
     float y_grafico_tempo = 480.f;
+    m_graficoTempoTitulo.setFont(m_fonte);
+    m_graficoTempoTitulo.setString("Grafico de Tempo: N/A");
+    m_graficoTempoTitulo.setCharacterSize(16);
+    m_graficoTempoTitulo.setPosition(x_painel + 20, y_grafico_tempo - 25); 
     m_bordaGraficoTempo.setSize(sf::Vector2f(m_largura - 40, h_grafico));
     m_bordaGraficoTempo.setPosition(x_painel + 20, y_grafico_tempo);
     m_bordaGraficoTempo.setFillColor(sf::Color::Transparent);
@@ -168,7 +172,7 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
     
     float x_painel = LARGURA_JANELA - m_largura;
 
-    // --- Botão de iniciar e pausar (LÓGICA CORRIGIDA) ---
+    // Botão de iniciar e pausar 
     if (simulacao_rodando) {
         m_textoBotao.setString("Pausar");
         m_botaoRun.setFillColor(sf::Color(200, 0, 0)); // Vermelho
@@ -179,18 +183,18 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
         m_textoBotao.setPosition(x_painel + 45, 30); // Posição para "Iniciar"
     }
 
-    // --- Clima ---
+    // Clima
     Clima clima = Simulacao::s_climaEscolhido;
     m_botaoSol.setFillColor(clima == Clima::SOL ? sf::Color(255, 215, 0) : sf::Color(100, 100, 100));
     m_botaoChuva.setFillColor(clima == Clima::CHUVA ? sf::Color(0, 100, 255) : sf::Color(100, 100, 100));
     m_botaoAleatorio.setFillColor(clima == Clima::ALEATORIO ? sf::Color(150, 0, 255) : sf::Color(100, 100, 100));
 
-    // --- Fitness ---
+    // Fitness
     std::stringstream ss_fit;
     ss_fit << std::fixed << std::setprecision(2) << melhor_carro.fitness;
     m_textoMelhorFitness.setString("Melhor Fitness: " + ss_fit.str());
     
-    // --- LÓGICA GRÁFICO FITNESS ---
+    // Lógica do gráfico fitness
     m_graficoFitness.clear();
     double max_fit = 0, min_fit = 0;
     if (!historico_fitness.empty()) {
@@ -228,7 +232,7 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
     m_graficoFitnessLabelY_Min.setString(ss_min_fit.str());
     m_graficoFitnessLabelX_Gen.setString(ss_gen_fit.str());
 
-    // --- LÓGICA PLACAR ---
+    // Lógica do placar
     std::vector<Carro> copia_pop = populacao;
     std::sort(copia_pop.begin(), copia_pop.end(), compararTempoCarros);
     std::stringstream ss_placar;
@@ -244,7 +248,7 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
     }
     m_placarTexto.setString(ss_placar.str());
 
-    // --- LÓGICA GRÁFICO TEMPO ---
+    // Lógica do gráfico de tempo 
     m_graficoTempo.clear();
     double max_time = 0, min_time = 0;
     if (!historico_tempo.empty()) {
@@ -255,12 +259,15 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
         }
     }
 
+    std::stringstream ss_titulo_tempo;
+    ss_titulo_tempo << "Grafico de Tempo (Melhor: " << std::fixed << std::setprecision(2) << min_time << "s)";
+    m_graficoTempoTitulo.setString(ss_titulo_tempo.str());
+
     double range_time = max_time - min_time;
     if (range_time < 1e-5) range_time = 1.0;
     double max_time_padded = max_time + range_time * 0.1;
     double min_time_padded = min_time - range_time * 0.1;
     if (min_time_padded < 0) min_time_padded = 0;
-
 
     float x_base_t = LARGURA_JANELA - m_largura + 20;
     float y_base_t = 480.f + 150.f; 
@@ -283,7 +290,7 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
     m_graficoTempoLabelY_Min.setString(ss_min_t.str());
     m_graficoTempoLabelX_Gen.setString(ss_gen_t.str());
 
-    // --- LÓGICA GENES (Corrigida) ---
+    // lógica dos genes 
     std::stringstream ss_genes;
     ss_genes << std::fixed << std::setprecision(2);
     ss_genes << "Potencia: " << melhor_carro.genoma.potencia_motor << "\n";
@@ -300,8 +307,8 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
     }
     ss_genes << "Tipo de pneu: " << tipo_pneu_str << "\n";
 
-    ss_genes << "Limiar Pneu: " << melhor_carro.genoma.estrategia_pitstop_pneu << "\n";
-    ss_genes << "Limiar Comb.: " << melhor_carro.genoma.estrategia_pitstop_combustivel << "\n";
+    ss_genes << "Desgaste aceitavel do pneu: " << melhor_carro.genoma.estrategia_pitstop_pneu * 100 << "%\n";
+    ss_genes << "Gasolina segura: " << melhor_carro.genoma.estrategia_pitstop_combustivel * 100 << "%\n";
     m_genesTexto.setString(ss_genes.str());
 }
 

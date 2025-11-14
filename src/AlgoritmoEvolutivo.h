@@ -22,5 +22,5 @@ private:
     void Avaliar();
     void SelecaoCrossoverMutacao();
     double ValorAleatorio(double min, double max);
-    void Mutar(Carro& individuo, double magnitude);
+    //void Mutar(Carro& individuo, double magnitude);
 };

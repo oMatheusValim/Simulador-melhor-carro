@@ -57,7 +57,7 @@ void AlgoritmoEvolutivo::Avaliar() {
     }
 }
 
-// Magnitude: 1.0 = normal, 0.1 = pequena, 5.0 = grande
+/*// Magnitude: 1.0 = normal, 0.1 = pequena, 5.0 = grande
 void AlgoritmoEvolutivo::Mutar(Carro& individuo, double magnitude) {
 
     // mutação da potência do motor - a média da f1 é 1050 cavalos e da f2 é 620
@@ -85,21 +85,31 @@ void AlgoritmoEvolutivo::Mutar(Carro& individuo, double magnitude) {
     
     if (individuo.genoma.peso_piloto < 54.0) individuo.genoma.peso_piloto = 54.0;
     if (individuo.genoma.peso_piloto > 78.0) individuo.genoma.peso_piloto = 78.0;
-}
+}*/
 
 void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
     
-    // 1. Ordena a população
+    // 1. Ordena a população e calcula o fitness médio
     std::sort(populacao.begin(), populacao.end(), compararCarros);
-
-    // 2. Atualiza o melhor de todos e verifica estagnação
-    Carro& novo_vencedor = populacao[0];
+    double soma_fitness = 0;
+    for(const auto& c : populacao) {
+        soma_fitness += c.fitness;
+    }
+    double avg_fit = soma_fitness / populacao.size();
+    double best_fit = populacao[0].fitness;
     
-    // Compara o fitness do novo vencedor com o da geração passada
+    // 'delta_normalizado' vai de 0 (estagnado) a 1 (espalhado)
+    double delta_normalizado = 0.0;
+    if (best_fit > 0) {
+        delta_normalizado = (best_fit - avg_fit) / best_fit;
+    }
+    
+    // 2. Verifica estagnação do VENCEDOR (para sua lógica)
+    Carro& novo_vencedor = populacao[0];
     if (std::abs(novo_vencedor.fitness - m_melhorFitnessAnterior) < 1e-5 && novo_vencedor.fitness > 0) {
         m_streakDoMelhor++;
     } else {
-        m_streakDoMelhor = 1; // Reset se o fitness for diferente
+        m_streakDoMelhor = 1; // Reset
     }
     m_melhorFitnessAnterior = novo_vencedor.fitness;
 
@@ -116,58 +126,57 @@ void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
     // 4. Mantém o Top 1 (Elitismo)
     nova_populacao.push_back(melhor_de_todos);
 
-    // --- HIPERMUTAÇÃO NO VENCEDOR (Sua ideia!) ---
+    // 5. LÓGICA 1: HIPERMUTAÇÃO NO VENCEDOR (Sua Ideia)
+    // Se ele está no topo há mais de 2 gerações, mute-o!
     if (m_streakDoMelhor > 2) {
-        // Magnitude exponencial: 1.5^(1), 1.5^(2), ...
         double magnitude_hyper = pow(1.5, m_streakDoMelhor - 2); 
-        std::cout << "Hipermutacao no vencedor! Nivel: " << magnitude_hyper << std::endl;
-        Mutar(nova_populacao[0], magnitude_hyper);
+        std::cout << "Hipermutacao no vencedor! Streak: " << m_streakDoMelhor << " Nivel: " << magnitude_hyper << std::endl;
+        nova_populacao[0].Mutar(magnitude_hyper); // Aplica a mutação no vencedor
     }
 
-    // 5. Pega os pais (Top 2 ao 5)
+    // 6. Pega os pais (Top 2 ao 5)
     std::vector<Carro> pais;
     for (int i = 1; i <= 4; ++i) {
         pais.push_back(populacao[i]);
     }
     
-    // 6. Aplica MUTAÇÃO PEQUENA nos pais (para explorar)
-    double magnitude_pequena = 0.1; 
+    double magnitude_pequena_pais = 0.1; 
     for (int i = 0; i < pais.size(); ++i) {
-        Mutar(pais[i], magnitude_pequena);
-        nova_populacao.push_back(pais[i]); // Adiciona os pais mutados
+        pais[i].Mutar(magnitude_pequena_pais);
+        nova_populacao.push_back(pais[i]); // Adiciona os pais (já mutados)
     }
     
-    // 7. Cria os 15 filhos restantes
-    double magnitude_grande_filhos = 2.0; // Mutação padrão para novos filhos
+    // 7. LÓGICA 2: MUTAÇÃO ADAPTATIVA NOS FILHOS (Ideia do Professor)
+    // Se a população está estagnada (delta baixo), a mutação é ALTA.
+    double magnitude_adaptativa = (1.0 - delta_normalizado) * 5.0 + 1.0; 
+    if (magnitude_adaptativa > 10.0) magnitude_adaptativa = 10.0; // Limite
+    
+    // 8. Cria os 15 filhos restantes
     for (int i = 5; i < TAMANHO_POPULACAO; ++i) {
         Carro& pai1 = pais[rand() % pais.size()];
         Carro& pai2 = pais[rand() % pais.size()];
-        
         Carro filho;
 
-        // --- CROSSOVER PONDERADO ---
+        // Crossover Ponderado (Corrigido)
         double peso1 = pai1.fitness;
         double peso2 = pai2.fitness;
         double peso_total = peso1 + peso2;
         if (peso_total < 1e-5) { peso1 = 1.0; peso2 = 1.0; peso_total = 2.0; }
 
-        // Genes do tipo double (média ponderada)
         filho.genoma.potencia_motor = (pai1.genoma.potencia_motor * peso1 + pai2.genoma.potencia_motor * peso2) / peso_total;
         filho.genoma.peso_piloto = (pai1.genoma.peso_piloto * peso1 + pai2.genoma.peso_piloto * peso2) / peso_total;
         filho.genoma.tamanho_tanque = (pai1.genoma.tamanho_tanque * peso1 + pai2.genoma.tamanho_tanque * peso2) / peso_total;
         filho.genoma.estrategia_pitstop_pneu = (pai1.genoma.estrategia_pitstop_pneu * peso1 + pai2.genoma.estrategia_pitstop_pneu * peso2) / peso_total;
         filho.genoma.estrategia_pitstop_combustivel = (pai1.genoma.estrategia_pitstop_combustivel * peso1 + pai2.genoma.estrategia_pitstop_combustivel * peso2) / peso_total;
 
-        // --- CORREÇÃO DO BUG ---
-        // Genes do tipo int (sorteio ponderado)
         if (ValorAleatorio(0.0, peso_total) < peso1) {
             filho.genoma.tipo_pneu_inicial = pai1.genoma.tipo_pneu_inicial;
         } else {
             filho.genoma.tipo_pneu_inicial = pai2.genoma.tipo_pneu_inicial;
         }
 
-        // 7. Aplica MUTAÇÃO GRANDE nos filhos
-        Mutar(filho, magnitude_grande_filhos);
+        // Aplica a mutação adaptativa nos filhos
+        filho.Mutar(magnitude_adaptativa);
         
         nova_populacao.push_back(filho);
     }

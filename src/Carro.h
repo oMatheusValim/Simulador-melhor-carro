@@ -28,4 +28,6 @@ public:
     void ResetarEstado(sf::Vector2f pos_inicial);
     void Atualizar(float dt, const Pista& pista, Clima clima_atual); 
     void Desenhar(sf::RenderWindow& window);
+    void Mutar(double magnitude);
+    double ValorAleatorio(double min, double max);
 };

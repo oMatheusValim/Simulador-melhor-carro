@@ -24,8 +24,8 @@ private:
     // Botões
     sf::RectangleShape m_botaoRun;
     sf::Text m_textoBotao;
-    sf::RectangleShape m_botaoReiniciar; // <<< PRECISA DESTE BOTÃO
-    sf::Text m_textoReiniciar; // <<< PRECISA DESTE TEXTO
+    sf::RectangleShape m_botaoReiniciar;
+    sf::Text m_textoReiniciar; 
     sf::RectangleShape m_botaoSol;
     sf::Text m_textoSol;
     sf::RectangleShape m_botaoChuva;
@@ -51,6 +51,7 @@ private:
     sf::Text m_graficoTempoLabelY_Max;
     sf::Text m_graficoTempoLabelY_Min;
     sf::Text m_graficoTempoLabelX_Gen;
+    sf::Text m_graficoTempoTitulo;
     
     // Genes do Melhor
     sf::Text m_genesTitulo;
