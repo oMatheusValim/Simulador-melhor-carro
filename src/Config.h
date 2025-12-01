@@ -10,6 +10,5 @@ const double TAXA_MUTACAO = 0.15;
 enum class Clima { SOL, CHUVA, ALEATORIO }; 
 
 // Configurações da Simulação 
-const int NUM_VOLTAS = 2; 
-const double PENALIDADE_BATIDA = 50.0; 
-const double TEMPO_PIT_STOP = 5.0; 
+const int NUM_VOLTAS = 5; 
+const double TEMPO_PIT_STOP = 2.5; 

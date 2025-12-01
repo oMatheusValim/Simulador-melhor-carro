@@ -167,7 +167,7 @@ void UIManager::TratarEvento(const sf::Event& event, bool& sim_deve_alternar, bo
 void UIManager::Atualizar(const std::vector<double>& historico_fitness, 
                         const std::vector<double>& historico_tempo,
                         const Carro& melhor_carro, 
-                        const std::vector<Carro>& populacao,
+                        const std::vector<Carro>& placar_populacao,
                         bool simulacao_rodando){
     
     float x_painel = LARGURA_JANELA - m_largura;
@@ -233,7 +233,7 @@ void UIManager::Atualizar(const std::vector<double>& historico_fitness,
     m_graficoFitnessLabelX_Gen.setString(ss_gen_fit.str());
 
     // Lógica do placar
-    std::vector<Carro> copia_pop = populacao;
+    std::vector<Carro> copia_pop = placar_populacao;
     std::sort(copia_pop.begin(), copia_pop.end(), compararTempoCarros);
     std::stringstream ss_placar;
     for (int i = 0; i < 5; ++i) {
@@ -341,6 +341,7 @@ void UIManager::Desenhar(sf::RenderWindow& window) {
     window.draw(m_graficoTempoLabelY_Max);
     window.draw(m_graficoTempoLabelY_Min);
     window.draw(m_graficoTempoLabelX_Gen);
+    window.draw(m_graficoTempoTitulo);
 
     // Genes 
     window.draw(m_genesTitulo);

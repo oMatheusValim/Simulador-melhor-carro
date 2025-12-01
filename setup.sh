@@ -1,7 +1,5 @@
 #!/bin/bash
-# Script para configurar o ambiente de desenvolvimento C++ para o projeto F1 Evolution
-
-# Interrompe o script se qualquer comando falhar
+# Script para configurar o ambiente de desenvolvimento C++ para o projeto Simulador-melhor-carro
 set -e
 
 echo "--- Atualizando lista de pacotes ---"
@@ -21,4 +19,4 @@ echo "--- Configuração concluída! ---"
 echo "Extensões do VS Code para instalar: 'C/C++ Extension Pack' e 'CMake Tools'."
 echo "Próximos passos:"
 echo "1. Compile o projeto com: cmake -B build -S . && cmake --build build"
-echo "2. Execute com: ./build/F1_Evolution"
+echo "2. Execute com: ./build/BEST-CAR-SIMULATOR"

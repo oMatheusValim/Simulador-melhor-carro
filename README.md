@@ -1,32 +1,37 @@
-# Simulador de Otimização de Carros com Algoritmos Evolutivos
+# Simulador do Melhor Carro
 
 ![Imagem ilustrativa](assets/imagem_ilustrativa.png)
 
 ## 🎯 Objetivo
 
-Este projeto utiliza um algoritmo genético para otimizar os parâmetros de carros de corrida em um simulador 2D. O objetivo é encontrar a melhor combinação de "genes" (potência, peso, tipo de pneu, etc.) para que os carros completem um percurso no menor tempo possível, adaptando-se a diferentes condições, como o clima.
+Este projeto utiliza um algoritmo genético para otimizar os parâmetros de carros de corrida em um simulador 2D. O objetivo é encontrar a melhor combinação de "genes" (potência, peso, tipo de pneu, estratégia de parada, etc.) para que os carros completem um percurso no menor tempo possível, adaptando-se a diferentes condições, como o clima dinâmico.
 
 Este trabalho foi desenvolvido como projeto final da disciplina SSC0713 - Sistemas Evolutivos Aplicados à Robótica, ministrada pelo Prof. Dr. Eduardo do Valle Simões.
 
 ## ✨ Funcionalidades Principais
 
-O simulador implementa um ecossistema completo de evolução e simulação:
+O simulador implementa um ecossistema complexo de física e evolução:
 
-  * **Simulação de Corrida 2D:** Vinte carros competem em uma pista 2D com *waypoints* customizáveis, simulando 2 voltas por geração.
-  * **Física Simplificada:** O desempenho dos carros é afetado por seus genes e por condições externas, incluindo:
-      * Potência do Motor vs. Consumo de Combustível.
-      * Peso do Piloto.
-      * Atrito dos Pneus (Sol, Chuva, Híbrido) vs. Clima.
-  * **Algoritmo Genético Avançado:**
-      * **Elitismo:** O "Top 5" de cada geração sobrevive e se torna pai. O melhor de todos é 100% preservado.
-      * **Crossover Ponderado:** Os pais com melhor fitness (2º ao 5º lugar) têm mais influência genética na geração dos filhos.
-      * **Mutação Dinâmica:** A taxa de mutação dos novos filhos aumenta automaticamente se o algoritmo detecta estagnação (o melhor carro não muda por várias gerações), forçando a busca por novas soluções.
-  * **Interface Gráfica (UI) Interativa:**
-      * Painel de controle em tempo real construído com **SFML**.
-      * **Gráfico de Fitness:** Mostra o melhor fitness de todos os tempos (eixo Y) por geração (eixo X).
-      * **Gráfico de Tempo:** Mostra o tempo do melhor carro (eixo Y) por geração (eixo X), permitindo visualizar a queda no tempo de volta.
-      * **Controle de Clima:** Botões para definir o clima da corrida como Sol, Chuva ou Aleatório (que pode mudar durante a corrida).
-      * **Placar e Genes:** Exibe o placar "Top 5" (com tempo e fitness) e os genes do melhor carro da simulação.
+### 🏎️ Simulação e Física
+* **Física de Arrasto (Drag):** A velocidade máxima não é fixa; ela é limitada naturalmente pela resistência do ar, criando um *trade-off* real entre potência do motor e consumo de combustível.
+* **Desgaste e Atrito:** Implementação de desgaste progressivo dos pneus e perda de tração. O atrito varia dependendo do tipo de pneu (Sol, Chuva, Híbrido) e do clima atual.
+* **Máquina de Estados (FSM):** Os carros possuem inteligência para decidir quando entrar no Pit Stop, navegando entre estados de *Racing*, *Entering Pit* e *Pitting*.
+* **Clima Dinâmico:** No modo aleatório, o clima muda durante a corrida, forçando "Pit Stops de Emergência" (mutações em tempo real) para troca de pneus.
+
+### 🧬 Algoritmo Genético Avançado
+O sistema utiliza múltiplas estratégias para evitar estagnação (máximos locais):
+* **Elitismo:** O melhor indivíduo é preservado, mas monitorado.
+* **Hipermutação Exponencial:** Se o vencedor permanecer no topo por muitas gerações consecutivas, ele sofre uma taxa de mutação exponencialmente maior para forçar a rotatividade.
+* **Mutação Adaptativa:** A taxa de mutação dos filhos varia automaticamente baseada na diferença entre o melhor fitness e a média da população.
+* **Crossover Ponderado:** Pais com melhor desempenho têm maior peso matemático na transmissão de seus genes.
+
+### 🖥️ Interface Gráfica (UI)
+* **Painel de Controle em Tempo Real:** Botões para Iniciar, Pausar e Reiniciar a simulação, além de controle total sobre o clima.
+* **Gráficos em Tempo Real:**
+    * *Fitness:* Visualização da evolução da aptidão ao longo das gerações.
+    * *Tempo:* Gráfico de queda do tempo da melhor volta.
+* **Visualização de Genes:** Exibição detalhada dos genes do atual campeão, incluindo estratégias de risco (porcentagem de segurança para combustível e pneus).
+* **Modo Editor:** Ferramenta interna para mapear novos *waypoints* e desenhar traçados de pista e pit lane clicando na tela.
 
 ## 🛠️ Tecnologias Utilizadas
 

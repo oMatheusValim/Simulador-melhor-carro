@@ -11,7 +11,7 @@ public:
     void Atualizar(const std::vector<double>& historico_fitness, 
                    const std::vector<double>& historico_tempo, 
                    const Carro& melhor_carro, 
-                   const std::vector<Carro>& populacao,
+                   const std::vector<Carro>& placar_populacao,
                    bool simulacao_rodando);
     void TratarEvento(const sf::Event& event, bool& sim_deve_alternar, bool& sim_deve_reiniciar);
     void Desenhar(sf::RenderWindow& window);

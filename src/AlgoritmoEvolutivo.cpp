@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cmath>
 
-// Função auxiliar para ordenar carros por fitness
 bool compararCarros(const Carro& a, const Carro& b) {
     return a.fitness > b.fitness;
 }
@@ -23,11 +22,8 @@ AlgoritmoEvolutivo::AlgoritmoEvolutivo() {
 void AlgoritmoEvolutivo::Reiniciar(){
     Iniciar();
 
-    // Limpa os históricos 
     historico_fitness.clear();
     historico_tempo_melhor.clear();
-    
-    // Reseta os contadores
     geracao_atual = 1;
     m_streakDoMelhor = 0;
     m_melhorFitnessAnterior = 0.0;
@@ -45,10 +41,10 @@ void AlgoritmoEvolutivo::Iniciar() {
         populacao[i].genoma.estrategia_pitstop_combustivel = ValorAleatorio(0.1, 0.3);
     }
     melhor_de_todos = populacao[0]; 
+    populacao_anterior = populacao;
 }
 
 void AlgoritmoEvolutivo::Avaliar() {
-    // Calcula o fitness da população atual.
     double melhor_fitness_geracao = -1.0;
     for (const auto& carro : populacao) {
         if (carro.fitness > melhor_fitness_geracao) {
@@ -57,38 +53,7 @@ void AlgoritmoEvolutivo::Avaliar() {
     }
 }
 
-/*// Magnitude: 1.0 = normal, 0.1 = pequena, 5.0 = grande
-void AlgoritmoEvolutivo::Mutar(Carro& individuo, double magnitude) {
-
-    // mutação da potência do motor - a média da f1 é 1050 cavalos e da f2 é 620
-    double range_potencia = 1050.0 - 620.0;
-    double variacao = ValorAleatorio(-range_potencia, range_potencia) * 0.1 * magnitude;
-    individuo.genoma.potencia_motor += variacao;
-    
-    // Garante limites
-    if (individuo.genoma.potencia_motor < 620.0) individuo.genoma.potencia_motor = 620.0;
-    if (individuo.genoma.potencia_motor > 1050.0) individuo.genoma.potencia_motor = 1050.0;
-    
-    // mutação do tamanho do tanque - por regras, pode até ~130 litros na f1 e 65 litros na f2
-    double range_tanque = 130.0 - 54.0;
-    double variacao_tanque = ValorAleatorio(-range_tanque, range_tanque) * 0.1 * magnitude;
-    individuo.genoma.tamanho_tanque += variacao_tanque;
-
-    if (individuo.genoma.tamanho_tanque < 54.0) individuo.genoma.tamanho_tanque = 54.0;
-    if (individuo.genoma.tamanho_tanque > 130.0) individuo.genoma.tamanho_tanque = 130.0;
-    
-
-    // mutação do peso do piloto - o piloto mais leve da f1 de 2024 tinha 54 kg e o mais pesado tinha 78
-    double range_piloto = 78.0 - 54.0;
-    double variacao_piloto = ValorAleatorio(-range_piloto, range_piloto) * 0.1 * magnitude;
-    individuo.genoma.peso_piloto += variacao_piloto;
-    
-    if (individuo.genoma.peso_piloto < 54.0) individuo.genoma.peso_piloto = 54.0;
-    if (individuo.genoma.peso_piloto > 78.0) individuo.genoma.peso_piloto = 78.0;
-}*/
-
 void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
-    
     // 1. Ordena a população e calcula o fitness médio
     std::sort(populacao.begin(), populacao.end(), compararCarros);
     double soma_fitness = 0;
@@ -104,12 +69,12 @@ void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
         delta_normalizado = (best_fit - avg_fit) / best_fit;
     }
     
-    // 2. Verifica estagnação do VENCEDOR (para sua lógica)
+    // 2. Verifica estagnação do VENCEDOR - vencer várias vezes consecutivas
     Carro& novo_vencedor = populacao[0];
     if (std::abs(novo_vencedor.fitness - m_melhorFitnessAnterior) < 1e-5 && novo_vencedor.fitness > 0) {
         m_streakDoMelhor++;
     } else {
-        m_streakDoMelhor = 1; // Reset
+        m_streakDoMelhor = 1;
     }
     m_melhorFitnessAnterior = novo_vencedor.fitness;
 
@@ -126,8 +91,7 @@ void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
     // 4. Mantém o Top 1 (Elitismo)
     nova_populacao.push_back(melhor_de_todos);
 
-    // 5. LÓGICA 1: HIPERMUTAÇÃO NO VENCEDOR (Sua Ideia)
-    // Se ele está no topo há mais de 2 gerações, mute-o!
+    // 5. HIPERMUTAÇÃO NO VENCEDOR - se está no topo há mais de 2 gerações, sofrerá mutação
     if (m_streakDoMelhor > 2) {
         double magnitude_hyper = pow(1.5, m_streakDoMelhor - 2); 
         std::cout << "Hipermutacao no vencedor! Streak: " << m_streakDoMelhor << " Nivel: " << magnitude_hyper << std::endl;
@@ -143,13 +107,12 @@ void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
     double magnitude_pequena_pais = 0.1; 
     for (int i = 0; i < pais.size(); ++i) {
         pais[i].Mutar(magnitude_pequena_pais);
-        nova_populacao.push_back(pais[i]); // Adiciona os pais (já mutados)
+        nova_populacao.push_back(pais[i]);
     }
     
-    // 7. LÓGICA 2: MUTAÇÃO ADAPTATIVA NOS FILHOS (Ideia do Professor)
-    // Se a população está estagnada (delta baixo), a mutação é ALTA.
+    // 7. MUTAÇÃO ADAPTATIVA NOS FILHOS - se a população está estagnada (delta baixo), a mutação é ALTA.
     double magnitude_adaptativa = (1.0 - delta_normalizado) * 5.0 + 1.0; 
-    if (magnitude_adaptativa > 10.0) magnitude_adaptativa = 10.0; // Limite
+    if (magnitude_adaptativa > 10.0) magnitude_adaptativa = 10.0;
     
     // 8. Cria os 15 filhos restantes
     for (int i = 5; i < TAMANHO_POPULACAO; ++i) {
@@ -157,7 +120,7 @@ void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
         Carro& pai2 = pais[rand() % pais.size()];
         Carro filho;
 
-        // Crossover Ponderado (Corrigido)
+        // Crossover Ponderado
         double peso1 = pai1.fitness;
         double peso2 = pai2.fitness;
         double peso_total = peso1 + peso2;
@@ -181,25 +144,31 @@ void AlgoritmoEvolutivo::SelecaoCrossoverMutacao() {
         nova_populacao.push_back(filho);
     }
     
-    populacao = nova_populacao; // Substitui a população antiga
+    populacao = nova_populacao;
 }
 
 void AlgoritmoEvolutivo::ProximaGeracao() {
-    Avaliar();                 // 1. Calcula o fitness de todos
-    SelecaoCrossoverMutacao(); // 2. Encontra o novo 'melhor_de_todos'
-    geracao_atual++;
+    Avaliar();                 
+    populacao_anterior = populacao;
 
-    // 3. Salva o melhor fitness DEPOIS da seleção,
-    // garantindo que o gráfico só suba ou se mantenha.
+    Carro* melhor_da_rodada = &populacao[0];
+    for(auto& c : populacao) {
+        if(c.fitness > melhor_da_rodada->fitness) {
+            melhor_da_rodada = &c;
+        }
+    }
+
+    SelecaoCrossoverMutacao();
+
     if (melhor_de_todos.fitness > 0) {
         historico_fitness.push_back(melhor_de_todos.fitness);
     }
 
-    // Salva o tempo do melhor, se ele terminou a corrida
     if (melhor_de_todos.terminou_corrida) {
         historico_tempo_melhor.push_back(melhor_de_todos.tempo_de_corrida);
     } else {
-        // Se ele não terminou, adiciona um tempo "punitivo" para o gráfico não ficar estranho
         historico_tempo_melhor.push_back(50.0);
     }
+
+    geracao_atual++;
 }

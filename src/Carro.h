@@ -4,6 +4,14 @@
 #include "Pista.h"
 #include "Config.h"
 
+// máquina de estados
+enum class CarState {
+    RACING,       
+    ENTERING_PIT, 
+    PITTING,      
+    EXITING_PIT   
+};
+
 class Carro {
 public:
     Genoma genoma;
@@ -23,6 +31,9 @@ public:
     // Para visualização
     sf::RectangleShape shape;
     sf::Color cor;
+
+    CarState m_state;     
+    float m_pitStopTimer;
 
     Carro();
     void ResetarEstado(sf::Vector2f pos_inicial);

@@ -5,10 +5,11 @@
 class Pista {
 public:
     std::vector<sf::Vector2f> m_waypoints;
+    std::vector<sf::Vector2f> m_pitWaypoints;
     sf::VertexArray m_visualTrack;
-
     sf::Texture m_backgroundTexture;
     sf::Sprite m_backgroundSprite;
+    sf::VertexArray m_visualPitTrack;
 
     Pista();
     void Desenhar(sf::RenderWindow& window);

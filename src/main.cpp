@@ -50,12 +50,11 @@ int main() {
                               << event.mouseButton.y << ".f));" << std::endl;
                 }
             }
-            // --- FIM DA LÓGICA DO EDITOR ---
         }
 
-        // --- LÓGICA DE CONTROLE (CORRIGIDA) ---
+        /// lógica de controle
         
-        // 1. Checa por REINÍCIO (prioridade máxima)
+        // 1. Checa por REINÍCIO
         if (sim_deve_reiniciar) {
             ag.Reiniciar();              // Reseta o algoritmo
             sim.PararCorrida();          // Para a corrida atual
@@ -67,11 +66,10 @@ int main() {
         if (sim_deve_alternar_pausa) {
             simulacao_automatica = !simulacao_automatica; // Inverte o estado
             
-            // Se ESTAMOS LIGANDO a simulação (e ela não estava rodando)
             if (simulacao_automatica && sim.corrida_terminou) {
                 sim.IniciarCorrida();
             }
-            sim_deve_alternar_pausa = false; // Reseta o gatilho
+            sim_deve_alternar_pausa = false;
         }
         
         // 3. Roda a simulação automática (se estiver ligada)
@@ -80,27 +78,24 @@ int main() {
                 sim.Atualizar(dt);
             }
             if (sim.corrida_terminou) {
-                ag.ProximaGeracao();   
-                sim.IniciarCorrida();    
+                ag.ProximaGeracao();
+                sim.IniciarCorrida();   
             }
         }
-        // --- Fim da Lógica de Controle ---
 
         // Atualiza a UI (passa o estado da simulação)
         ui.Atualizar(ag.historico_fitness, 
                      ag.historico_tempo_melhor, 
                      ag.melhor_de_todos, 
-                     ag.populacao,
+                     ag.populacao_anterior,
                      simulacao_automatica); // Passa o estado atual
 
         // --- Desenho ---
         window.clear(sf::Color(50, 50, 50));
         sim.m_pista.Desenhar(window); 
         
-        // --- CORREÇÃO DE EXIBIÇÃO ---
-        // Desenha os carros se a simulação estiver rodando OU pausada
-        // (Só não desenha se a simulação não foi iniciada)
-        if (simulacao_automatica || sim.rodando) {
+        // Desenha os carros se a corrida estiver rodando OU se ela terminou (pausada)
+        if (sim.rodando || sim.corrida_terminou) { 
             for (auto& carro : ag.populacao) {
                 carro.Desenhar(window);
             }
