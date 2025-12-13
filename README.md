@@ -1,6 +1,11 @@
 # Simulador do Melhor Carro
 
-![Imagem ilustrativa](assets/imagem_ilustrativa.png)
+## 🎥 Demonstração do Projeto
+
+[![Assista ao Vídeo](https://img.youtube.com/vi/7GTCjU1kPnY/0.jpg)](https://youtu.be/7GTCjU1kPnY)
+
+> Caso o vídeo acima não carregue, você pode assistir [diretamente no YouTube](https://youtu.be/7GTCjU1kPnY) ou baixar via [Google Drive](https://drive.google.com/file/d/1OUxzYLVQ7Zd-cjHRWNR1_nlqcq7oCzug/view?usp=drive_link).
+
 
 ## 🎯 Objetivo
 

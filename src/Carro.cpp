@@ -44,6 +44,20 @@ void Carro::Mutar(double magnitude) {
     genoma.peso_piloto += variacao_piloto; 
     if (genoma.peso_piloto < 54.0) genoma.peso_piloto = 54.0;
     if (genoma.peso_piloto > 78.0) genoma.peso_piloto = 78.0;
+
+    // mutação da estratégia de combustível
+    double range_estrategia_combustivel = 1.0 - 0.0;
+    double variacao_estrategia_combustivel = ValorAleatorio(-range_estrategia_combustivel, range_estrategia_combustivel) * 0.1 * magnitude;
+    genoma.estrategia_pitstop_combustivel += variacao_estrategia_combustivel; 
+    if (genoma.estrategia_pitstop_combustivel < 0.0) genoma.estrategia_pitstop_combustivel = 0.0;
+    if (genoma.estrategia_pitstop_combustivel > 1.0) genoma.estrategia_pitstop_combustivel = 1.0;
+
+    // mutação da estragégia de desgaste do pneu
+    double range_desgaste_pneu = 1.0 - 0.0;
+    double variacao_desgaste_pneu= ValorAleatorio(-range_desgaste_pneu, range_desgaste_pneu) * 0.1 * magnitude;
+    genoma.estrategia_pitstop_pneu+= variacao_desgaste_pneu; 
+    if (genoma.estrategia_pitstop_pneu < 0.0) genoma.estrategia_pitstop_pneu = 0.0;
+    if (genoma.estrategia_pitstop_pneu > 1.0) genoma.estrategia_pitstop_pneu = 1.0;
 }
 
 Carro::Carro() {
@@ -176,7 +190,7 @@ void Carro::Atualizar(float dt, const Pista& pista, Clima clima_atual) {
             if (m_targetWaypointIndex >= pista.m_pitWaypoints.size()) {
                 // Chegou na garagem (último waypoint do pit)
                 m_state = CarState::PITTING;
-                m_pitStopTimer = 2.5f; // 2.5 segundos de parada
+                m_pitStopTimer = 2.0f; // 2.5 segundos de parada
                 velocidade = 0.f;
                 return;
             }
